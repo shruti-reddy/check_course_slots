@@ -24,6 +24,7 @@ def check_and_notify():
     course_name = "Advanced Software Engineering"
     courses = [course for course in soup.find_all("tr") if course_name in course.text]
 
+    email_body = "courses found"
     # Check if there’s more than one instance of the course
     if len(courses) > 1:
         # Prepare the email content
