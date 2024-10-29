@@ -4,6 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
+import json
 
 def check_and_notify():
     # Define the URL and payload
@@ -21,29 +22,36 @@ def check_and_notify():
     response.raise_for_status()  # Check for HTTP request errors
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    course_name = "MACHINE LEARNING"
-    courses = [course for course in soup.find_all("tr") if course_name in course.text]
+    courses_to_check = json.loads(os.getenv("COURSES_TO_CHECK"))
+    alert_messages = []
+    for course_name, threshold in courses_to_check.items():
+        # Find all instances of the course
+        courses = [course for course in soup.find_all("tr") if course_name in course.text]
+        
+        # Check if the number of instances exceeds the threshold
+        if len(courses) >= threshold:
+            course_message = f"'{course_name}' has {len(courses)} instances (threshold: {threshold}):\n"
+            for course in courses:
+                course_message += f"{course.get_text(separator=' ')}\n"
+            alert_messages.append(course_message)
 
-    # Check if there’s more than one instance of the course
-    if len(courses) > 1:
-        # Prepare the email content
-        email_body = f"Multiple instances of the course '{course_name}' were found:\n"
-        for course in courses:
-            email_body += f"{course.get_text(separator=' ')}\n\n"
+    if alert_messages:
+        email_body = "\n\n".join(alert_messages)
     else:
-        print("only one course found")
+        print("courses not found")
         return
+    
 
     # Email setup
     sender_email = os.getenv("EMAIL_USER")
-    receiver_email = os.getenv("RECEIVER_EMAIL")
+    receiver_emails = os.getenv("RECEIVER_EMAILS").split(",")
     password = os.getenv("EMAIL_PASS")
     subject = "Multiple Instances of Advanced Software Engineering Detected"
 
     # Compose email
     message = MIMEMultipart()
     message["From"] = sender_email
-    message["To"] = receiver_email
+    message["To"] = ", ".join(receiver_emails)
     message["Subject"] = subject
     message.attach(MIMEText(email_body, "plain"))
 
@@ -57,7 +65,8 @@ def check_and_notify():
             server.ehlo()  # Identify to the server
             server.starttls()
             server.login(sender_email, password)
-            server.sendmail(sender_email, receiver_email, message.as_string())
+            server.sendmail(sender_email, receiver_emails, message.as_string())
+            print("Email sent successfully to all recipients.")
         except smtplib.SMTPException as e:
                     print("Error during SMTP communication:", e)    
 
