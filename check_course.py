@@ -21,7 +21,7 @@ def check_and_notify():
     response.raise_for_status()  # Check for HTTP request errors
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    course_name = "ADVANCED SOFTWARE ENGINEERING"
+    course_name = "MACHINE LEARNING"
     courses = [course for course in soup.find_all("tr") if course_name in course.text]
 
     # Check if there’s more than one instance of the course
