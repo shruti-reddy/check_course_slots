@@ -15,7 +15,7 @@ def check_and_notify():
         'frmGroup': 'one',
         'frmSelectSchedule': 'View'
     }
-    courses_to_check = {"ADVANCED SOFTWARE ENGINEERING":2, "DATA COMMUNICATIONS AND NETWOR":3}
+    courses_to_check = {"DATA COMMUNICATIONS AND NETWOR":3}
 
     # Send the POST request
     response = requests.post(url, data=payload)
