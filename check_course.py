@@ -21,16 +21,18 @@ def check_and_notify():
     response.raise_for_status()  # Check for HTTP request errors
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    course_name = "Advanced Software Engineering"
+    course_name = "ADVANCED SOFTWARE ENGINEERING"
     courses = [course for course in soup.find_all("tr") if course_name in course.text]
 
-    email_body = "courses found"
     # Check if there’s more than one instance of the course
     if len(courses) > 1:
         # Prepare the email content
         email_body = f"Multiple instances of the course '{course_name}' were found:\n"
         for course in courses:
             email_body += f"{course.get_text(separator=' ')}\n\n"
+    else:
+        print("only one course found")
+        return
 
     # Email setup
     sender_email = os.getenv("EMAIL_USER")
@@ -46,10 +48,18 @@ def check_and_notify():
     message.attach(MIMEText(email_body, "plain"))
 
     # Send the email
+    print(sender_email)
+    print(password)
+
     with smtplib.SMTP(os.getenv("SMTP_SERVER"), os.getenv("SMTP_PORT")) as server:
-        server.starttls()
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
+        try:
+            server.connect(os.getenv("SMTP_SERVER"), os.getenv("SMTP_PORT"))  # Explicitly connect
+            server.ehlo()  # Identify to the server
+            server.starttls()
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        except smtplib.SMTPException as e:
+                    print("Error during SMTP communication:", e)    
 
 
 if __name__ == "__main__":
