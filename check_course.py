@@ -4,7 +4,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
-import json
 
 def check_and_notify():
     # Define the URL and payload
@@ -16,13 +15,13 @@ def check_and_notify():
         'frmGroup': 'one',
         'frmSelectSchedule': 'View'
     }
+    courses_to_check = {"ADVANCED SOFTWARE ENGINEERING":1, "DATA COMMUNICATIONS AND NETWOR":2}
 
     # Send the POST request
     response = requests.post(url, data=payload)
     response.raise_for_status()  # Check for HTTP request errors
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    courses_to_check = json.loads(os.getenv("COURSES_TO_CHECK"))
     alert_messages = []
     for course_name, threshold in courses_to_check.items():
         # Find all instances of the course
