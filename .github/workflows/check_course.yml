@@ -27,5 +27,5 @@ jobs:
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+          RECEIVER_EMAILS: ${{ secrets.RECEIVER_EMAILS }}
         run: python check_course.py
